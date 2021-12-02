@@ -13,6 +13,13 @@ pub enum Direction {
     Up(i64),
 }
 
+#[derive(Default)]
+struct State {
+    horizontal_position: i64,
+    depth: i64,
+    aim: i64,
+}
+
 #[aoc_generator(day2)]
 pub fn generate(inp: &str) -> Vec<Direction> {
     inp.lines().filter_map(|it| it.parse().ok()).collect()
@@ -20,24 +27,43 @@ pub fn generate(inp: &str) -> Vec<Direction> {
 
 #[aoc(day2, part1)]
 pub fn part1(inp: &[Direction]) -> i64 {
-    let res = inp.iter().fold((0, 0), |(hor, dep), &it| match it {
-        Direction::Forward(x) => (hor + x, dep),
-        Direction::Down(x) => (hor, dep + x),
-        Direction::Up(x) => (hor, dep - x),
+    let res = inp.iter().fold(State::default(), |acc, &it| match it {
+        Direction::Forward(x) => State {
+            horizontal_position: acc.horizontal_position + x,
+            ..acc
+        },
+        Direction::Down(x) => State {
+            depth: acc.depth + x,
+            ..acc
+        },
+        Direction::Up(x) => State {
+            depth: acc.depth - x,
+            ..acc
+        },
     });
 
-    res.0 * res.1
+    res.horizontal_position * res.depth
 }
 
 #[aoc(day2, part2)]
 pub fn part2(inp: &[Direction]) -> i64 {
-    let res = inp.iter().fold((0, 0, 0), |(hor, dep, aim), &it| match it {
-        Direction::Forward(x) => (hor + x, dep + aim * x, aim),
-        Direction::Down(x) => (hor, dep, aim + x),
-        Direction::Up(x) => (hor, dep, aim - x),
+    let res = inp.iter().fold(State::default(), |acc, &it| match it {
+        Direction::Forward(x) => State {
+            horizontal_position: acc.horizontal_position + x,
+            depth: acc.depth + acc.aim * x,
+            ..acc
+        },
+        Direction::Down(x) => State {
+            aim: acc.aim + x,
+            ..acc
+        },
+        Direction::Up(x) => State {
+            aim: acc.aim - x,
+            ..acc
+        },
     });
 
-    res.0 * res.1
+    res.horizontal_position * res.depth
 }
 
 #[cfg(test)]
