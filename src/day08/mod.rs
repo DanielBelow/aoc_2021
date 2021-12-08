@@ -2,41 +2,46 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 use std::collections::HashSet;
 
-type UniqueSignal = Vec<String>;
-type DigitOutput = Vec<String>;
+#[derive(Debug, Clone)]
+pub struct SignalRelation {
+    inputs: Vec<String>,
+    outputs: Vec<String>,
+}
 
 #[aoc_generator(day8)]
-pub fn generate(inp: &str) -> Vec<(UniqueSignal, DigitOutput)> {
+pub fn generate(inp: &str) -> Vec<SignalRelation> {
     inp.lines()
         .map(|it| {
             let spl = it.split('|').collect_vec();
-            let unique = spl[0]
+            let inputs = spl[0]
                 .split(' ')
                 .filter(|it| !it.is_empty())
                 .filter_map(|l| l.parse::<String>().ok())
                 .collect_vec();
-            let output = spl[1]
+            let outputs = spl[1]
                 .split(' ')
                 .filter(|it| !it.is_empty())
                 .filter_map(|l| l.parse::<String>().ok())
                 .collect_vec();
-            (unique, output)
+            SignalRelation { inputs, outputs }
         })
         .collect()
 }
 
 #[aoc(day8, part1)]
-pub fn part1(inp: &[(UniqueSignal, DigitOutput)]) -> usize {
-    inp.iter().flat_map(|(_, out)| out).fold(0, |acc, it| {
-        if matches!(it.len(), 2 | 3 | 4 | 7) {
-            acc + 1
-        } else {
-            acc
-        }
-    })
+pub fn part1(inp: &[SignalRelation]) -> usize {
+    inp.iter()
+        .flat_map(|it| it.outputs.clone())
+        .fold(0, |acc, it| {
+            if matches!(it.len(), 2 | 3 | 4 | 7) {
+                acc + 1
+            } else {
+                acc
+            }
+        })
 }
 
-fn find_digit_by_len(us: &UniqueSignal, len: usize) -> HashSet<char> {
+fn find_digit_by_len(us: &[String], len: usize) -> HashSet<char> {
     us.iter()
         .find(|it| it.len() == len)
         .unwrap()
@@ -45,18 +50,21 @@ fn find_digit_by_len(us: &UniqueSignal, len: usize) -> HashSet<char> {
 }
 
 #[aoc(day8, part2)]
-pub fn part2(inp: &[(UniqueSignal, DigitOutput)]) -> usize {
+pub fn part2(inp: &[SignalRelation]) -> usize {
     inp.iter()
-        .map(|(lhs, rhs)| {
+        .map(|it| {
             let mut digits = vec![HashSet::new(); 10];
 
-            digits[1] = find_digit_by_len(lhs, 2);
-            digits[4] = find_digit_by_len(lhs, 4);
-            digits[7] = find_digit_by_len(lhs, 3);
-            digits[8] = find_digit_by_len(lhs, 7);
+            let inputs = &it.inputs;
+
+            digits[1] = find_digit_by_len(inputs, 2);
+            digits[4] = find_digit_by_len(inputs, 4);
+            digits[7] = find_digit_by_len(inputs, 3);
+            digits[8] = find_digit_by_len(inputs, 7);
 
             // len 6 => 0, 6, 9
-            lhs.iter()
+            inputs
+                .iter()
                 .filter(|it| it.len() == 6)
                 .map(|it| it.chars().collect::<HashSet<_>>())
                 .for_each(|it| {
@@ -70,7 +78,8 @@ pub fn part2(inp: &[(UniqueSignal, DigitOutput)]) -> usize {
                 });
 
             // len 5 => 2, 3, 5
-            lhs.iter()
+            inputs
+                .iter()
                 .filter(|it| it.len() == 5)
                 .map(|it| it.chars().collect::<HashSet<_>>())
                 .for_each(|it| {
@@ -83,7 +92,7 @@ pub fn part2(inp: &[(UniqueSignal, DigitOutput)]) -> usize {
                     }
                 });
 
-            rhs.iter().fold(0, |acc, it| {
+            it.outputs.iter().fold(0, |acc, it| {
                 let sig = it.chars().collect::<HashSet<_>>();
                 let as_num = digits.iter().position(|d| *d == sig).unwrap();
                 acc * 10 + as_num
