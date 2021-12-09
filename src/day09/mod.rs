@@ -1,6 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::{iproduct, Itertools};
-use std::collections::HashMap;
+use std::collections::HashSet;
 
 #[aoc_generator(day9)]
 pub fn generate(inp: &str) -> Vec<Vec<usize>> {
@@ -13,8 +13,11 @@ pub fn generate(inp: &str) -> Vec<Vec<usize>> {
         .collect()
 }
 
-fn get_neighbours(x: usize, y: usize, width: usize, height: usize) -> Vec<(usize, usize)> {
+fn get_neighbour_coords(x: usize, y: usize, inp: &[Vec<usize>]) -> Vec<(usize, usize)> {
     const OFFSETS: [(i64, i64); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+
+    let width = inp.len();
+    let height = inp[0].len();
 
     let mut result = Vec::new();
 
@@ -38,13 +41,12 @@ fn get_neighbours(x: usize, y: usize, width: usize, height: usize) -> Vec<(usize
 }
 
 fn is_lowpoint(candidate: usize, x: usize, y: usize, inp: &[Vec<usize>]) -> bool {
-    get_neighbours(x, y, inp.len(), inp[0].len())
+    get_neighbour_coords(x, y, inp)
         .into_iter()
         .all(|(nx, ny)| inp[nx][ny] > candidate)
 }
 
-#[aoc(day9, part1)]
-pub fn part1(inp: &[Vec<usize>]) -> usize {
+fn get_lowpoints(inp: &[Vec<usize>]) -> Vec<(usize, usize)> {
     let width = inp.len();
     let height = inp[0].len();
 
@@ -53,50 +55,50 @@ pub fn part1(inp: &[Vec<usize>]) -> usize {
     for (x, y) in iproduct!(0..width, 0..height) {
         let cur = inp[x][y];
         if is_lowpoint(cur, x, y, inp) {
-            low_points.push(cur);
+            low_points.push((x, y));
         }
     }
 
-    low_points.iter().fold(0, |acc, it| acc + 1 + *it)
+    low_points
 }
 
-fn find_lowpoint(x: usize, y: usize, inp: &[Vec<usize>]) -> Option<(usize, usize)> {
-    let current = inp[x][y];
+#[aoc(day9, part1)]
+pub fn part1(inp: &[Vec<usize>]) -> usize {
+    get_lowpoints(inp)
+        .into_iter()
+        .fold(0, |acc, (x, y)| acc + 1 + inp[x][y])
+}
 
-    if is_lowpoint(current, x, y, inp) {
-        return Some((x, y));
+fn get_basin_size(x: usize, y: usize, inp: &[Vec<usize>]) -> usize {
+    let mut basin = HashSet::new();
+
+    let mut queue = vec![(x, y)];
+
+    while let Some((x, y)) = queue.pop() {
+        let neighbours = get_neighbour_coords(x, y, inp)
+            .into_iter()
+            .filter(|&(nx, ny)| inp[nx][ny] != 9)
+            .collect_vec();
+
+        for (nx, ny) in neighbours {
+            if basin.insert((nx, ny)) {
+                queue.push((nx, ny));
+            }
+        }
     }
 
-    get_neighbours(x, y, inp.len(), inp[0].len())
-        .into_iter()
-        .filter(|&(nx, ny)| inp[nx][ny] < current)
-        .map(|(nx, ny)| find_lowpoint(nx, ny, inp))
-        .next()
-        .flatten()
+    basin.len()
 }
 
 #[aoc(day9, part2)]
 pub fn part2(inp: &[Vec<usize>]) -> usize {
-    let mut basin_sizes = HashMap::new();
-
-    let width = inp.len();
-    let height = inp[0].len();
-
-    for (x, y) in iproduct!(0..width, 0..height) {
-        let cur = inp[x][y];
-        if cur == 9 {
-            continue;
-        }
-
-        if let Some((lx, ly)) = find_lowpoint(x, y, inp) {
-            basin_sizes
-                .entry((lx, ly))
-                .and_modify(|it| *it += 1)
-                .or_insert(1);
-        }
-    }
-
-    basin_sizes.values().sorted().rev().take(3).product()
+    get_lowpoints(inp)
+        .into_iter()
+        .map(|(x, y)| get_basin_size(x, y, inp))
+        .sorted()
+        .rev()
+        .take(3)
+        .product()
 }
 
 #[cfg(test)]
