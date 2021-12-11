@@ -38,16 +38,8 @@ fn apply_flash(row: usize, col: usize, inp: &mut Vec<Vec<usize>>) {
     }
 }
 
-fn needs_to_flash(flashed: &[Vec<bool>], inp: &[Vec<usize>]) -> bool {
-    for (r, row) in inp.iter().enumerate() {
-        for (c, col) in row.iter().enumerate() {
-            if *col > 9 && !flashed[r][c] {
-                return true;
-            }
-        }
-    }
-
-    false
+fn needs_to_flash(inp: &[Vec<usize>]) -> bool {
+    inp.iter().any(|r| r.iter().any(|c| *c > 9))
 }
 
 fn do_step(inp: &mut Vec<Vec<usize>>) -> usize {
@@ -59,17 +51,12 @@ fn do_step(inp: &mut Vec<Vec<usize>>) -> usize {
         }
     }
 
-    let mut did_flash = vec![vec![false; 10]; 10];
-
-    while needs_to_flash(&did_flash, inp) {
+    while needs_to_flash(inp) {
         for row in 0..inp.len() {
             for col in 0..inp[row].len() {
-                if inp[row][col] > 9 && !did_flash[row][col] {
+                if inp[row][col] > 9 {
                     inp[row][col] = 0;
-                    did_flash[row][col] = true;
-
                     apply_flash(row, col, inp);
-
                     flashes += 1;
                 }
             }
