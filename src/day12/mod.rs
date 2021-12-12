@@ -1,5 +1,4 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-use itertools::Itertools;
 use parse_display::{Display, FromStr};
 
 #[derive(Display, FromStr, Eq, PartialEq, Clone, Debug)]
@@ -11,45 +10,66 @@ pub struct Path {
 
 #[aoc_generator(day12)]
 pub fn generate(inp: &str) -> Vec<Path> {
-    let res = inp
-        .lines()
+    inp.lines()
         .filter_map(|it| it.parse::<Path>().ok())
-        .collect_vec();
+        .fold(Vec::new(), |mut acc, it| {
+            if it.from != "start" && it.to != "end" {
+                let inverted = Path {
+                    from: it.to.clone(),
+                    to: it.from.clone(),
+                };
+                acc.push(inverted);
+            }
 
-    let other_dir = res
-        .iter()
-        .filter(|it| it.from != "start" && it.to != "end")
-        .map(|it| Path {
-            from: it.to.clone(),
-            to: it.from.clone(),
+            acc.push(it);
+
+            acc
         })
-        .collect_vec();
-    res.iter().chain(other_dir.iter()).cloned().collect()
 }
 
-fn collect_paths_from(
+fn collect_paths_from<'a>(
     cur: &str,
-    inp: &[Path],
-    cur_path: &[String],
-    result: &mut Vec<Vec<String>>,
-    can_visit: fn(&str, &[String]) -> bool,
+    inp: &'a [Path],
+    cur_path: &[&'a String],
+    can_double: bool,
+    result: &mut Vec<Vec<&'a String>>,
+    can_visit: fn(&str, &[&String], bool) -> bool,
 ) {
     if cur == "end" {
-        result.push(cur_path.to_owned());
+        result.push(Vec::from(cur_path));
         return;
     }
 
+    let can_double = can_double
+        && cur_path
+            .iter()
+            .filter(|&&it| it == cur && it.chars().all(char::is_lowercase))
+            .count()
+            < 2;
+
     for available_path in inp
         .iter()
-        .filter(|it| it.from.eq(cur) && can_visit(&it.to, cur_path))
+        .filter(|it| it.from == cur && can_visit(&it.to, cur_path, can_double))
     {
         let mut cur_path = cur_path.to_owned();
-        cur_path.push(available_path.to.clone());
-        collect_paths_from(&available_path.to, inp, &cur_path, result, can_visit);
+        cur_path.push(&available_path.to);
+
+        collect_paths_from(
+            &available_path.to,
+            inp,
+            &cur_path,
+            can_double,
+            result,
+            can_visit,
+        );
     }
 }
 
-fn find_paths(inp: &[Path], can_visit: fn(&str, &[String]) -> bool) -> Vec<Vec<String>> {
+fn find_paths(
+    inp: &[Path],
+    can_double: bool,
+    can_visit: fn(&str, &[&String], bool) -> bool,
+) -> Vec<Vec<&String>> {
     let mut result = Vec::new();
 
     let start = inp
@@ -60,7 +80,8 @@ fn find_paths(inp: &[Path], can_visit: fn(&str, &[String]) -> bool) -> Vec<Vec<S
     collect_paths_from(
         &start.from,
         inp,
-        &[start.from.clone()],
+        &[&start.from],
+        can_double,
         &mut result,
         can_visit,
     );
@@ -70,17 +91,17 @@ fn find_paths(inp: &[Path], can_visit: fn(&str, &[String]) -> bool) -> Vec<Vec<S
 
 #[aoc(day12, part1)]
 pub fn part1(inp: &[Path]) -> usize {
-    let can_visit_cave = |node: &str, paths: &[String]| {
-        !node.chars().all(char::is_lowercase) || !paths.iter().any(|it| it.eq(node))
+    let can_visit_cave = |node: &str, paths: &[&String], _: bool| {
+        !node.chars().all(char::is_lowercase) || !paths.iter().any(|&it| it == node)
     };
 
-    let paths = find_paths(inp, can_visit_cave);
+    let paths = find_paths(inp, false, can_visit_cave);
     paths.len()
 }
 
 #[aoc(day12, part2)]
 pub fn part2(inp: &[Path]) -> usize {
-    let can_visit_cave = |node: &str, paths: &[String]| {
+    let can_visit_cave = |node: &str, paths: &[&String], can_double: bool| {
         if node == "start" {
             return false;
         }
@@ -89,18 +110,10 @@ pub fn part2(inp: &[Path]) -> usize {
             return true;
         }
 
-        let contains_node = paths.iter().any(|it| it.eq(node));
-        if !contains_node {
-            return true;
-        }
-
-        paths
-            .iter()
-            .filter(|&it| it.chars().all(char::is_lowercase))
-            .all_unique()
+        can_double || !paths.iter().any(|&it| it == node)
     };
 
-    let paths = find_paths(inp, can_visit_cave);
+    let paths = find_paths(inp, true, can_visit_cave);
     paths.len()
 }
 
