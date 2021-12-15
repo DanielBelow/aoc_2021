@@ -1,5 +1,5 @@
 use aoc_runner_derive::{aoc, aoc_generator};
-use itertools::{iproduct, Itertools};
+use itertools::Itertools;
 
 #[aoc_generator(day11)]
 pub fn generate(inp: &str) -> Vec<Vec<usize>> {
@@ -13,27 +13,29 @@ pub fn generate(inp: &str) -> Vec<Vec<usize>> {
 }
 
 fn apply_flash(row: usize, col: usize, inp: &mut Vec<Vec<usize>>) {
-    for (dx, dy) in iproduct!(-1i64..=1, -1i64..=1) {
-        if dx == 0 && dy == 0 {
-            continue;
-        }
+    let mut positions_to_check = vec![(row + 1, col), (row, col + 1), (row + 1, col + 1)];
 
-        let row = row as i64 + dx;
-        let col = col as i64 + dy;
+    if row >= 1 && col >= 1 {
+        positions_to_check.push((row - 1, col - 1));
+    }
+    if row >= 1 {
+        positions_to_check.push((row - 1, col));
+        positions_to_check.push((row - 1, col + 1));
+    }
+    if col >= 1 {
+        positions_to_check.push((row, col - 1));
+        positions_to_check.push((row + 1, col - 1));
+    }
 
-        if row < 0 || row >= inp.len() as i64 {
-            continue;
-        }
+    let width = inp.len();
+    let height = inp[0].len();
 
-        let row = row as usize;
-        if col < 0 || col >= inp[row].len() as i64 {
-            continue;
-        }
-
-        let col = col as usize;
-
-        if inp[row][col] != 0 {
-            inp[row][col] += 1;
+    for &(dx, dy) in positions_to_check
+        .iter()
+        .filter(|(dx, dy)| *dx < width && *dy < height)
+    {
+        if inp[dx][dy] != 0 {
+            inp[dx][dy] += 1;
         }
     }
 }

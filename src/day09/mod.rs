@@ -14,30 +14,22 @@ pub fn generate(inp: &str) -> Vec<Vec<usize>> {
 }
 
 fn get_neighbour_coords(x: usize, y: usize, inp: &[Vec<usize>]) -> Vec<(usize, usize)> {
-    const OFFSETS: [(i64, i64); 4] = [(0, -1), (1, 0), (0, 1), (-1, 0)];
+    let mut neighbours = vec![(x + 1, y), (x, y + 1)];
+    if let Some(it) = x.checked_sub(1) {
+        neighbours.push((it, y));
+    }
+    if let Some(it) = y.checked_sub(1) {
+        neighbours.push((x, it));
+    }
 
     let width = inp.len();
     let height = inp[0].len();
 
-    let mut result = Vec::new();
-
-    for (x_off, y_off) in OFFSETS {
-        let dx = x as i64 + x_off;
-        let dy = y as i64 + y_off;
-        if dx < 0 || dx >= width as i64 {
-            continue;
-        }
-        let dx = dx as usize;
-
-        if dy < 0 || dy >= height as i64 {
-            continue;
-        }
-        let dy = dy as usize;
-
-        result.push((dx, dy));
-    }
-
-    result
+    neighbours
+        .iter()
+        .copied()
+        .filter(|&(dx, dy)| dx < width && dy < height)
+        .collect()
 }
 
 fn is_lowpoint(candidate: usize, x: usize, y: usize, inp: &[Vec<usize>]) -> bool {

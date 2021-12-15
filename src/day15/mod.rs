@@ -17,11 +17,11 @@ fn neighbours(cur: (usize, usize), size: usize) -> Vec<(usize, usize)> {
     let (x, y) = cur;
 
     let mut positions_to_check = vec![(x + 1, y), (x, y + 1)];
-    if x >= 1 {
-        positions_to_check.push((x - 1, y));
+    if let Some(xx) = x.checked_sub(1) {
+        positions_to_check.push((xx, y));
     }
-    if y >= 1 {
-        positions_to_check.push((x, y - 1));
+    if let Some(yy) = y.checked_sub(1) {
+        positions_to_check.push((x, yy));
     }
 
     positions_to_check
