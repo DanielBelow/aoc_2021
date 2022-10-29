@@ -29,7 +29,7 @@ fn score_completion(c: char) -> usize {
         ']' => 2,
         '}' => 3,
         '>' => 4,
-        _ => panic!("Unexpected character {}!", c),
+        _ => panic!("Unexpected character {c}!"),
     }
 }
 

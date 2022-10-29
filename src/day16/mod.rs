@@ -21,7 +21,7 @@ fn from_binary(inp: &str) -> u64 {
 fn parse_hex_packet(packet: &str) -> Packet {
     let mut as_binary = packet
         .chars()
-        .filter_map(|it| it.to_digit(16).map(|d| format!("{:04b}", d)))
+        .filter_map(|it| it.to_digit(16).map(|d| format!("{d:04b}")))
         .flat_map(|it| it.chars().collect_vec())
         .join("");
     parse_packet(&mut as_binary)
@@ -115,7 +115,7 @@ fn parse_packet(input: &mut String) -> Packet {
     } else if length_type_id == "1" {
         parse_sub_packets_by_count(input)
     } else {
-        panic!("Invalid length type id: {}", length_type_id)
+        panic!("Invalid length type id: {length_type_id}")
     };
 
     Packet {

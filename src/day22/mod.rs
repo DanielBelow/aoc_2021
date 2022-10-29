@@ -103,7 +103,7 @@ pub fn part2(inp: &[Input]) -> i64 {
         let max_z = get_position_of(iter.instr.to_z + 1, &zs);
 
         for (xi, yi, zi) in iproduct!(min_x..max_x, min_y..max_y, min_z..max_z) {
-            res[xi][yi][zi] = if iter.flag { 1 } else { 0 };
+            res[xi][yi][zi] = i32::from(iter.flag);
         }
     }
 

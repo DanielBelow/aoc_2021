@@ -69,11 +69,7 @@ where
         }
 
         let bit_to_find = pred(&current_list, idx);
-        current_list = current_list
-            .iter()
-            .filter(|it| it.chars().nth(idx).expect("idx is in range") == bit_to_find)
-            .cloned()
-            .collect();
+        current_list.retain(|it| it.chars().nth(idx).expect("idx is in range") == bit_to_find);
     }
 
     assert_eq!(current_list.len(), 1);

@@ -36,7 +36,7 @@ fn run_steps(n: usize, inp: &Input) -> usize {
         .template
         .chars()
         .tuple_windows::<(_, _)>()
-        .map(|(l, r)| format!("{}{}", l, r))
+        .map(|(l, r)| format!("{l}{r}"))
         .counts();
 
     let mappings = inp
@@ -50,8 +50,8 @@ fn run_steps(n: usize, inp: &Input) -> usize {
         for (k, v) in pairs.iter().filter(|(_, &v)| v > 0) {
             if let Some(m) = mappings.get(k) {
                 if let [l, r, ..] = k.chars().collect_vec().as_slice() {
-                    *next_step_pairs.entry(format!("{}{}", l, m)).or_insert(0) += *v;
-                    *next_step_pairs.entry(format!("{}{}", m, r)).or_insert(0) += *v;
+                    *next_step_pairs.entry(format!("{l}{m}")).or_insert(0) += *v;
+                    *next_step_pairs.entry(format!("{m}{r}")).or_insert(0) += *v;
                     if let Some(val) = next_step_pairs.get_mut(k) {
                         *val -= v;
                     }

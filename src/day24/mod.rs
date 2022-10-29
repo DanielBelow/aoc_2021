@@ -132,12 +132,12 @@ fn execute_insts(
             }
             Instruction::EqImm(dst, val) => {
                 let idx = get_reg_index(*dst);
-                state.regs[idx] = if state.regs[idx] == *val { 1 } else { 0 };
+                state.regs[idx] = i64::from(state.regs[idx] == *val);
             }
             Instruction::Eq(dst, src) => {
                 let idx = get_reg_index(*dst);
                 let val = state.regs[get_reg_index(*src)];
-                state.regs[idx] = if state.regs[idx] == val { 1 } else { 0 };
+                state.regs[idx] = i64::from(state.regs[idx] == val);
             }
         }
 
