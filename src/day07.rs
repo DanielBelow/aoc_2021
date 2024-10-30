@@ -2,13 +2,14 @@ use aoc_runner_derive::{aoc, aoc_generator};
 use itertools::Itertools;
 
 #[aoc_generator(day7)]
-pub fn generate(inp: &str) -> Vec<i64> {
-    inp.lines()
-        .next()
-        .unwrap()
-        .split(',')
-        .filter_map(|it| it.parse().ok())
-        .collect()
+pub fn generate(inp: &str) -> Option<Vec<i64>> {
+    Some(
+        inp.lines()
+            .next()?
+            .split(',')
+            .filter_map(|it| it.parse().ok())
+            .collect(),
+    )
 }
 
 fn fuel_for_target<T>(target: i64, inp: &[i64], fuel_cost: T) -> i64
@@ -45,14 +46,20 @@ mod tests {
 
     #[test]
     fn test_sample_p1() {
-        let gen = generate(TEST_DATA);
+        let Some(gen) = generate(TEST_DATA) else {
+            panic!("Could not parse test input")
+        };
+
         let res = part1(&gen);
         assert_eq!(res, Some(37));
     }
 
     #[test]
     fn test_sample_p2() {
-        let gen = generate(TEST_DATA);
+        let Some(gen) = generate(TEST_DATA) else {
+            panic!("Could not parse test input")
+        };
+
         let res = part2(&gen);
         assert_eq!(res, Some(168));
     }

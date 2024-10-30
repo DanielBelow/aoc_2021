@@ -81,17 +81,17 @@ fn fold(fld: Fold, paper: &mut HashSet<(usize, usize)>) {
 }
 
 #[aoc(day13, part1)]
-pub fn part1(inp: &Input) -> usize {
+pub fn part1(inp: &Input) -> Option<usize> {
     let mut paper = inp
         .points
         .iter()
         .map(|it| (it.y, it.x))
         .collect::<HashSet<_>>();
 
-    let first_fold = inp.folds.first().unwrap();
+    let first_fold = inp.folds.first()?;
     fold(*first_fold, &mut paper);
 
-    paper.len()
+    Some(paper.len())
 }
 
 #[aoc(day13, part2)]
@@ -154,8 +154,11 @@ fold along x=5";
 
     #[test]
     fn test_sample_p1() {
-        let gen = generate(TEST_DATA);
-        let res = part1(&gen.unwrap());
-        assert_eq!(res, 17);
+        let Some(gen) = generate(TEST_DATA) else {
+            panic!("Could not parse test input")
+        };
+
+        let res = part1(&gen);
+        assert_eq!(res, Some(17));
     }
 }

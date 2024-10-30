@@ -14,7 +14,7 @@ pub struct Coords {
 }
 
 impl std::ops::Add for Coords {
-    type Output = Coords;
+    type Output = Self;
 
     fn add(self, rhs: Self) -> Self::Output {
         Self::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
@@ -22,7 +22,7 @@ impl std::ops::Add for Coords {
 }
 
 impl std::ops::Sub for Coords {
-    type Output = Coords;
+    type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         Self::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
@@ -30,11 +30,11 @@ impl std::ops::Sub for Coords {
 }
 
 impl Coords {
-    fn new(x: i64, y: i64, z: i64) -> Self {
+    const fn new(x: i64, y: i64, z: i64) -> Self {
         Self { x, y, z }
     }
 
-    fn distance(&self, other: &Coords) -> i64 {
+    const fn distance(&self, other: &Self) -> i64 {
         (self.x - other.x).abs() + (self.y - other.y).abs() + (self.z - other.z).abs()
     }
 

@@ -27,7 +27,7 @@ pub fn generate(inp: &str) -> Option<[u64; 2]> {
     Some([p1_pos, p2_pos])
 }
 
-fn play_game(mut state: GameState) -> u64 {
+fn play_game(mut state: GameState) -> Option<u64> {
     let mut num_rolls = 0;
 
     loop {
@@ -47,7 +47,7 @@ fn play_game(mut state: GameState) -> u64 {
         state.player_turn = (state.player_turn + 1) % 2;
     }
 
-    (num_rolls as u64) * state.scores.iter().min().unwrap()
+    Some((num_rolls as u64) * state.scores.iter().min()?)
 }
 
 fn play_all_games_impl(state: GameState, cache: &mut HashMap<GameState, [u64; 2]>) -> [u64; 2] {
@@ -93,7 +93,7 @@ fn play_all_games(state: GameState) -> u64 {
 }
 
 #[aoc(day21, part1)]
-pub fn part1(inp: &[u64; 2]) -> u64 {
+pub fn part1(inp: &[u64; 2]) -> Option<u64> {
     let state = GameState {
         positions: *inp,
         scores: [0; 2],
@@ -122,7 +122,7 @@ mod tests {
     fn test_sample_p1() {
         let inp = &[4, 8];
         let res = part1(inp);
-        assert_eq!(res, 739_785);
+        assert_eq!(res, Some(739_785));
     }
 
     #[test]

@@ -44,7 +44,7 @@ pub fn part1(inp: &[SignalRelation]) -> usize {
 fn find_digit_by_len(us: &[String], len: usize) -> HashSet<char> {
     us.iter()
         .find(|it| it.len() == len)
-        .unwrap()
+        .expect("Element with length 'len' exists")
         .chars()
         .collect::<HashSet<_>>()
 }
@@ -94,7 +94,10 @@ pub fn part2(inp: &[SignalRelation]) -> usize {
 
             it.outputs.iter().fold(0, |acc, it| {
                 let sig = it.chars().collect::<HashSet<_>>();
-                let as_num = digits.iter().position(|d| *d == sig).unwrap();
+                let as_num = digits
+                    .iter()
+                    .position(|d| *d == sig)
+                    .expect("Element 'sig' exists");
                 acc * 10 + as_num
             })
         })

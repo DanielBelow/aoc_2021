@@ -2,7 +2,7 @@ use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day3)]
 pub fn generate(inp: &str) -> Vec<String> {
-    inp.lines().map(std::string::ToString::to_string).collect()
+    inp.lines().map(ToString::to_string).collect()
 }
 
 fn count_zero_bits_at_idx(inp: &[String], idx: usize) -> usize {

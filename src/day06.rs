@@ -1,17 +1,18 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 
 #[aoc_generator(day6)]
-pub fn generate(inp: &str) -> Vec<usize> {
-    inp.lines()
-        .next()
-        .unwrap()
-        .split(',')
-        .filter_map(|it| it.parse().ok())
-        .collect()
+pub fn generate(inp: &str) -> Option<Vec<usize>> {
+    Some(
+        inp.lines()
+            .next()?
+            .split(',')
+            .filter_map(|it| it.parse().ok())
+            .collect(),
+    )
 }
 
 fn simulate_fish(num_days: u16, fish: &[usize]) -> usize {
-    let mut result = vec![0; 9];
+    let mut result = [0; 9];
 
     for f in fish {
         result[*f] += 1;
@@ -44,14 +45,20 @@ mod tests {
 
     #[test]
     fn test_sample_p1() {
-        let gen = generate(TEST_DATA);
+        let Some(gen) = generate(TEST_DATA) else {
+            panic!("Could not parse test input")
+        };
+
         let res = part1(&gen);
         assert_eq!(res, 5934);
     }
 
     #[test]
     fn test_sample_p2() {
-        let gen = generate(TEST_DATA);
+        let Some(gen) = generate(TEST_DATA) else {
+            panic!("Could not parse test input")
+        };
+
         let res = part2(&gen);
         assert_eq!(res, 26_984_457_539);
     }

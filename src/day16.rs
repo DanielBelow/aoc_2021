@@ -164,7 +164,7 @@ fn do_calc(packet: &Packet) -> u64 {
         5..=7 => {
             let first = packet
                 .sub_packets
-                .get(0)
+                .first()
                 .map(do_calc)
                 .expect("There are always two sub-packets here");
             let second = packet
@@ -198,48 +198,66 @@ mod tests {
 
     #[test]
     fn test_parse_literal_value_packet() {
-        let gen = generate("D2FE28");
-        let packet = parse_hex_packet(&gen.unwrap());
+        let Some(gen) = generate("D2FE28") else {
+            panic!("Could not parse test input")
+        };
+
+        let packet = parse_hex_packet(&gen);
         assert_eq!(packet.value, Some(2021));
     }
 
     #[test]
     fn test_parse_operator_packet_1() {
-        let gen = generate("38006F45291200");
-        let packet = parse_hex_packet(&gen.unwrap());
+        let Some(gen) = generate("38006F45291200") else {
+            panic!("Could not parse test input")
+        };
+
+        let packet = parse_hex_packet(&gen);
         assert_eq!(packet.sub_packets.len(), 2);
-        assert_eq!(packet.sub_packets.get(0).and_then(|it| it.value), Some(10));
+        assert_eq!(packet.sub_packets.first().and_then(|it| it.value), Some(10));
         assert_eq!(packet.sub_packets.get(1).and_then(|it| it.value), Some(20));
     }
 
     #[test]
     fn test_parse_operator_packet_2() {
-        let gen = generate("EE00D40C823060");
-        let packet = parse_hex_packet(&gen.unwrap());
+        let Some(gen) = generate("EE00D40C823060") else {
+            panic!("Could not parse test input")
+        };
+
+        let packet = parse_hex_packet(&gen);
         assert_eq!(packet.sub_packets.len(), 3);
-        assert_eq!(packet.sub_packets.get(0).and_then(|it| it.value), Some(1));
+        assert_eq!(packet.sub_packets.first().and_then(|it| it.value), Some(1));
         assert_eq!(packet.sub_packets.get(1).and_then(|it| it.value), Some(2));
         assert_eq!(packet.sub_packets.get(2).and_then(|it| it.value), Some(3));
     }
 
     #[test]
     fn test_sample_p1_1() {
-        let gen = generate("8A004A801A8002F478");
-        let res = part1(&gen.unwrap());
+        let Some(gen) = generate("8A004A801A8002F478") else {
+            panic!("Could not parse test input")
+        };
+
+        let res = part1(&gen);
         assert_eq!(res, 16);
     }
 
     #[test]
     fn test_sample_p1_2() {
-        let gen = generate("620080001611562C8802118E34");
-        let res = part1(&gen.unwrap());
+        let Some(gen) = generate("620080001611562C8802118E34") else {
+            panic!("Could not parse test input")
+        };
+
+        let res = part1(&gen);
         assert_eq!(res, 12);
     }
 
     #[test]
     fn test_sample_p1_3() {
-        let gen = generate("C0015000016115A2E0802F182340");
-        let res = part1(&gen.unwrap());
+        let Some(gen) = generate("C0015000016115A2E0802F182340") else {
+            panic!("Could not parse test input")
+        };
+
+        let res = part1(&gen);
         assert_eq!(res, 23);
     }
 
@@ -257,8 +275,11 @@ mod tests {
         ];
 
         for (inp, expected) in test_data {
-            let gen = generate(inp);
-            let res = part2(&gen.unwrap());
+            let Some(gen) = generate(inp) else {
+                panic!("Could not parse test input")
+            };
+
+            let res = part2(&gen);
             assert_eq!(res, expected);
         }
     }

@@ -53,7 +53,7 @@ pub fn part1(inp: &[Vec<usize>]) -> usize {
     find_path(inp)
 }
 
-fn inc_by_step(step: usize, it: usize) -> usize {
+const fn inc_by_step(step: usize, it: usize) -> usize {
     if it + step < 10 {
         it + step
     } else {

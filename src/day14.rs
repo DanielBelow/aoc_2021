@@ -71,10 +71,10 @@ fn run_steps(n: usize, inp: &Input) -> usize {
 
     char_freqs.values_mut().for_each(|it| *it /= 2);
     *char_freqs
-        .entry(inp.template.chars().next().unwrap())
+        .entry(inp.template.chars().next().expect("Is not empty"))
         .or_insert(0) += 1;
     *char_freqs
-        .entry(inp.template.chars().last().unwrap())
+        .entry(inp.template.chars().last().expect("Is not empty"))
         .or_insert(0) += 1;
 
     match char_freqs.values().minmax() {

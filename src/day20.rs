@@ -106,9 +106,9 @@ fn convert(image: &[Vec<char>], algo: &str, outside: char) -> Vec<Vec<char>> {
     for x in 0..image.len() {
         for y in 0..image[x].len() {
             let as_str = cube_as_string(&image, x, y, outside);
-            let num = usize::from_str_radix(&as_str, 2).unwrap();
+            let num = usize::from_str_radix(&as_str, 2).expect("Is binary number");
 
-            let output_pixel = algo.chars().nth(num).unwrap();
+            let output_pixel = algo.chars().nth(num).expect("'num' is a valid index");
             output_image[x][y] = output_pixel;
         }
     }

@@ -12,11 +12,11 @@ pub struct TargetArea {
 }
 
 impl TargetArea {
-    fn contains(&self, x: i64, y: i64) -> bool {
+    const fn contains(&self, x: i64, y: i64) -> bool {
         self.from_x <= x && x <= self.to_x && self.from_y <= y && y <= self.to_y
     }
 
-    fn is_above(&self, y: i64) -> bool {
+    const fn is_above(&self, y: i64) -> bool {
         y < self.from_y
     }
 
@@ -55,7 +55,7 @@ struct Probe {
 }
 
 impl Probe {
-    fn new(x_vel: i64, y_vel: i64) -> Self {
+    const fn new(x_vel: i64, y_vel: i64) -> Self {
         Self {
             x_vel,
             y_vel,
@@ -148,14 +148,20 @@ mod tests {
 
     #[test]
     fn test_sample_p1() {
-        let gen = generate(TEST_DATA).unwrap();
+        let Some(gen) = generate(TEST_DATA) else {
+            panic!("Could not parse test input")
+        };
+
         let res = part1(&gen);
         assert_eq!(res, Some(45));
     }
 
     #[test]
     fn test_sample_p2() {
-        let gen = generate(TEST_DATA).unwrap();
+        let Some(gen) = generate(TEST_DATA) else {
+            panic!("Could not parse test input")
+        };
+
         let res = part2(&gen);
         assert_eq!(res, 112);
     }

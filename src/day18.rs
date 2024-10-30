@@ -104,19 +104,15 @@ impl SnailfishNumber {
 
     fn add_to_leftmost(self, val: u64) -> Self {
         match self {
-            SnailfishNumber::Regular(n) => SnailfishNumber::Regular(n + val),
-            SnailfishNumber::Pair(l, r) => {
-                SnailfishNumber::Pair(Box::new(l.add_to_leftmost(val)), r)
-            }
+            Self::Regular(n) => Self::Regular(n + val),
+            Self::Pair(l, r) => Self::Pair(Box::new(l.add_to_leftmost(val)), r),
         }
     }
 
     fn add_to_rightmost(self, val: u64) -> Self {
         match self {
-            SnailfishNumber::Regular(n) => SnailfishNumber::Regular(n + val),
-            SnailfishNumber::Pair(l, r) => {
-                SnailfishNumber::Pair(l, Box::new(r.add_to_rightmost(val)))
-            }
+            Self::Regular(n) => Self::Regular(n + val),
+            Self::Pair(l, r) => Self::Pair(l, Box::new(r.add_to_rightmost(val))),
         }
     }
 
@@ -129,14 +125,14 @@ impl SnailfishNumber {
 }
 
 fn try_parse_snailfish_number(inp: &str) -> Option<SnailfishNumber> {
-    let re = Regex::new("^\\[([0-9]+),([0-9]+)]$").unwrap();
+    let re = Regex::new("^\\[([0-9]+),([0-9]+)]$").ok()?;
     if re.is_match(inp) {
-        let caps = re.captures(inp).unwrap();
-        let x = caps.get(1).unwrap();
-        let y = caps.get(2).unwrap();
+        let caps = re.captures(inp)?;
+        let x = caps.get(1)?;
+        let y = caps.get(2)?;
 
-        let x = x.as_str().parse::<u64>().unwrap();
-        let y = y.as_str().parse::<u64>().unwrap();
+        let x = x.as_str().parse::<u64>().ok()?;
+        let y = y.as_str().parse::<u64>().ok()?;
 
         let left = SnailfishNumber::Regular(x);
         let right = SnailfishNumber::Regular(y);
@@ -147,15 +143,12 @@ fn try_parse_snailfish_number(inp: &str) -> Option<SnailfishNumber> {
     None
 }
 
-fn parse_snailfish_number(inp: &str) -> SnailfishNumber {
+fn parse_snailfish_number(inp: &str) -> Option<SnailfishNumber> {
     if let Some(sfn) = try_parse_snailfish_number(inp) {
-        return sfn;
+        return Some(sfn);
     }
 
-    let contained = inp
-        .strip_prefix('[')
-        .and_then(|it| it.strip_suffix(']'))
-        .unwrap();
+    let contained = inp.strip_prefix('[').and_then(|it| it.strip_suffix(']'))?;
 
     let mut split_idx = None;
     if contained.starts_with('[') {
@@ -175,42 +168,48 @@ fn parse_snailfish_number(inp: &str) -> SnailfishNumber {
         }
     }
 
-    let (left, right) = if let Some(split_idx) = split_idx {
-        assert_eq!(contained.chars().nth(split_idx), Some(','));
-        let (l, r) = contained.split_at(split_idx);
-        (l, r.strip_prefix(',').unwrap())
-    } else {
-        let comma_idx = contained.chars().position(|it| it == ',').unwrap();
-        let (l, r) = contained.split_at(comma_idx);
-        (l, r.strip_prefix(',').unwrap())
-    };
+    let (left, right) = split_idx.map_or_else(
+        || {
+            let comma_idx = contained
+                .chars()
+                .position(|it| it == ',')
+                .expect("Contains comma");
+            let (l, r) = contained.split_at(comma_idx);
+            (l, r.strip_prefix(',').expect("Contains comma"))
+        },
+        |split_idx| {
+            assert_eq!(contained.chars().nth(split_idx), Some(','));
+            let (l, r) = contained.split_at(split_idx);
+            (l, r.strip_prefix(',').expect("Contains comma"))
+        },
+    );
 
     let try_parse_snailfish = |s: &str| {
-        if let Ok(x) = s.parse::<u64>() {
-            SnailfishNumber::Regular(x)
-        } else {
-            parse_snailfish_number(s)
-        }
+        s.parse::<u64>().map_or_else(
+            |_| parse_snailfish_number(s),
+            |x| Some(SnailfishNumber::Regular(x)),
+        )
     };
 
     // try parsing as number
-    let x = try_parse_snailfish(left);
-    let y = try_parse_snailfish(right);
-    SnailfishNumber::Pair(Box::new(x), Box::new(y))
+    let x = try_parse_snailfish(left)?;
+    let y = try_parse_snailfish(right)?;
+    Some(SnailfishNumber::Pair(Box::new(x), Box::new(y)))
 }
 
 #[aoc_generator(day18)]
 pub fn generate(inp: &str) -> Vec<SnailfishNumber> {
-    inp.lines().map(parse_snailfish_number).collect_vec()
+    inp.lines().filter_map(parse_snailfish_number).collect_vec()
 }
 
 #[aoc(day18, part1)]
-pub fn part1(inp: &[SnailfishNumber]) -> u64 {
-    inp.iter()
-        .cloned()
-        .reduce(|l, r| (l + r).reduce())
-        .unwrap()
-        .magnitude()
+pub fn part1(inp: &[SnailfishNumber]) -> Option<u64> {
+    Some(
+        inp.iter()
+            .cloned()
+            .reduce(|l, r| (l + r).reduce())?
+            .magnitude(),
+    )
 }
 
 #[aoc(day18, part2)]
@@ -218,12 +217,7 @@ pub fn part2(inp: &[SnailfishNumber]) -> Option<u64> {
     inp.iter()
         .cloned()
         .permutations(2)
-        .map(|it| {
-            it.into_iter()
-                .reduce(|l, r| (l + r).reduce())
-                .unwrap()
-                .magnitude()
-        })
+        .filter_map(|it| Some(it.into_iter().reduce(|l, r| (l + r).reduce())?.magnitude()))
         .max()
 }
 
@@ -240,7 +234,7 @@ mod tests {
             Box::new(SnailfishNumber::Regular(2)),
         );
 
-        assert_eq!(sfn, expected);
+        assert_eq!(sfn, Some(expected));
     }
 
     #[test]
@@ -254,7 +248,7 @@ mod tests {
             )),
             Box::new(SnailfishNumber::Regular(3)),
         );
-        assert_eq!(sfn, expected);
+        assert_eq!(sfn, Some(expected));
     }
 
     #[test]
@@ -269,7 +263,7 @@ mod tests {
             )),
         );
 
-        assert_eq!(sfn, expected);
+        assert_eq!(sfn, Some(expected));
     }
 
     #[test]
@@ -286,6 +280,6 @@ mod tests {
                 Box::new(SnailfishNumber::Regular(5)),
             )),
         );
-        assert_eq!(sfn, expected);
+        assert_eq!(sfn, Some(expected));
     }
 }

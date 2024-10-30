@@ -7,7 +7,7 @@ pub fn generate(inp: &str) -> Vec<Vec<usize>> {
     inp.lines()
         .map(|it| {
             it.chars()
-                .map(|c| c.to_string().parse::<usize>().unwrap())
+                .map(|c| c.to_string().parse::<usize>().expect("Is digit"))
                 .collect()
         })
         .collect()

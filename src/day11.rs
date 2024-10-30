@@ -12,7 +12,7 @@ pub fn generate(inp: &str) -> Vec<Vec<usize>> {
         .collect()
 }
 
-fn apply_flash(row: usize, col: usize, inp: &mut Vec<Vec<usize>>) {
+fn apply_flash(row: usize, col: usize, inp: &mut [Vec<usize>]) {
     let mut positions_to_check = vec![(row + 1, col), (row, col + 1), (row + 1, col + 1)];
 
     if row >= 1 && col >= 1 {
@@ -44,7 +44,7 @@ fn needs_to_flash(inp: &[Vec<usize>]) -> bool {
     inp.iter().any(|r| r.iter().any(|c| *c > 9))
 }
 
-fn do_step(inp: &mut Vec<Vec<usize>>) -> usize {
+fn do_step(inp: &mut [Vec<usize>]) -> usize {
     let mut flashes = 0;
 
     for row in inp.iter_mut() {
